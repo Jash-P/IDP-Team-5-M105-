@@ -92,6 +92,7 @@ void turnRight() {
     current_facing = 4;
   }
 }
+
 void turnLeft(){
 // Set the motors to turn left
   /*leftMotor->setSpeed(150);
@@ -205,15 +206,33 @@ void pull_up_point_turn() //pull up for a forward turn
   switch (junctionType)
   {
     case 1:
-      while (sr_val == LOW or fsf_val == LOW) //before front and right are on line
+      while (!(sl_val == HIGH && sr_val == HIGH)) //move until both of them are on line
+      {
         line_following;
+      }
+      while (fsf_val == LOW)
+      {
+        left();
+      }
 
     case 2:
-      while (sl_val == LOW or fsf_val == LOW) //before both of them are on line
+      while (!(sl_val == HIGH && sr_val == HIGH)) //move until both of them are on line
+      {
         line_following;
+      }
+      while (fsf_val == LOW)
+      {
+        right();
+      }
 
     case 3:
-      while (sl_val == LOW or sr_val == LOW) //before both of them are on line
+      while (!(sl_val == HIGH && sr_val == HIGH)) //move until both of them are on line
+      {
+        line_following;
+      }
+    
+    case 4:
+      while (!(sl_val == HIGH && sr_val == HIGH))
       {
         line_following;
       }
