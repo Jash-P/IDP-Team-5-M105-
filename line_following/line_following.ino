@@ -212,7 +212,7 @@ void pull_up_point_turn() //pull up for a forward turn
       }
       while (fsf_val == LOW)
       {
-        left();
+        left(); //finish this pull-up in the position forward as well for a more convenient use at the high/level
       }
 
     case 2:
@@ -240,7 +240,10 @@ void pull_up_point_turn() //pull up for a forward turn
 
 }
 
-
+void randomtestingfunction()
+{
+  delay(1);
+}
 
 
 void setup()
