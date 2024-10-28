@@ -323,7 +323,8 @@ void setup()
   Serial.println("Adafruit Motorshield v2 - DC Motor test!");
   if (!AFMS.begin())
   {         // create with the default frequency 1.6KHz
-    // if (!AFMS.begin(1000)) {  // OR with a different frequency, say 1KHz
+    // OR with a different frequency, say 1KHz
+    // if (!AFMS.begin(1000))
       Serial.println("Could not find Motor Shield. Check wiring.");
       while (1);
   }
