@@ -25,6 +25,7 @@ int vspeed = 100;  // variable speed for forward motion
 int tspeed = 255;  // turning speed
 int tdelay = 20;   // delay during turns
 int current_facing = 1;    //1 - north   2 - west   3 - south   4 - east
+int last_node_number = 0;
 
 void forward()
 {
@@ -340,6 +341,86 @@ void adjust_facing(int default_facing)
   } 
   
   current_facing = default_facing;
+
+}
+
+void go_forward() //going straight untill the next single turn/junction
+{
+  forward();
+  delay(10);
+  while (/*fsf_val == HIGH && */fsr_val == LOW && fsl_val == LOW) // no junction or single turn detected so go straight 
+  {
+    line_following();
+  } 
+}
+
+void route_to_factory() //hardcoded route to the factory (just gets there)
+{
+  go_forward();
+  
+  if (fsf_val == HIGH, fsr == HIGH, fsl == HIGH) //confirm that we are at junction 1
+  {
+    last_node_number = 1;
+    go_forward();
+  } 
+
+  if (fsf_val == HIGH, fsr == HIGH, fsl == HIGH) //confirm that we are at junction 2
+  {
+    last_node_number = 2;
+    go_forward();
+  } 
+
+  if (fsf_val == LOW, fsr == HIGH, fsl == HIGH) //confirm that we are at junction 3
+  {
+    last_node_number = 3;
+    pointTurnRight();
+    go_forward();
+  } 
+
+  if (fsf_val == HIGH, fsr == HIGH, fsl == HIGH) //confirm that we are at junction 4
+  {
+    last_node_number = 4;
+    go_forward();
+  } 
+
+  if (fsf_val == HIGH, fsr == HIGH, fsl == HIGH) //confirm that we are at junction 5
+  {
+    last_node_number = 5;
+    go_forward();
+  } 
+
+  if (fsf_val == HIGH, fsr == HIGH, fsl == HIGH) //confirm that we are at junction 6
+  {
+    last_node_number = 6;
+    go_forward();
+  } 
+
+  if (fsf_val == LOW, fsr == HIGH, fsl == HIGH) //confirm that we are at junction 7
+  {
+    last_node_number = 7;
+    pointTurnLeft();
+    go_forward();
+  } 
+
+  if (fsf_val == HIGH, fsr == LOW, fsl == HIGH) //confirm that we are at junction 9
+  {
+    last_node_number = 9;
+    go_forward();
+  } 
+
+  if (fsf_val == LOW, fsr == LOW, fsl == HIGH) //confirm that we are at the single turn after junction 9
+  {
+    pointTurnLeft();
+    go_forward();
+  } 
+
+  if (fsf_val == HIGH, fsr == LOW, fsl == HIGH) //confirm that we are at junction 20
+  {
+    last_node_number = 20;
+    pointTurnLeft();
+    forward();
+    delay(100);
+  } 
 
 }
 
