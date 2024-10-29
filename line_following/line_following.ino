@@ -102,18 +102,22 @@ void line_following() //does not detect the junctions/turns!!!
         }
 }
 
-// pull up when a node or junction is detected so that back sensors align with the turning point
+// pull up when a junction is detected so that back sensors align with the turning point, only for point turn
 void pull_up() //pull up for a forward turn
 {
-  int junctionType; // 1 - forward and right, 2 - forward and left, 3 - right and left, 4 - all sides
+  int junctionType; // 1 - forward and right, 2 - forward and left, 3 - right and left, 4 - all sides, 5 - single turn right, 6 - single turn left
     if (fsr_val == HIGH, fsf_val == HIGH, fsl_val == LOW)
       {junctionType = 1;}
     else if (fsr_val == LOW, fsf_val == HIGH, fsl_val == HIGH)
       {junctionType = 2;}
     else if (fsr_val == HIGH, fsf_val == LOW, fsl_val == HIGH)
       {junctionType = 3;}
-    else
-    {junctionType = 4;}
+    else if (fsf_val == HIGH, fsr_val == HIGH, fsl_val == HIGH)
+      {junctionType = 4;}
+    else if (fsf_val == LOW, fsr_val == HIGH, fsl_val == LOW)
+      {junctionType = 5;}
+    else if (fsf_val == LOW, fsl_val == HIGH, fsr_val == LOW)
+      {junctionType = 6;}
 
   switch (junctionType)
   {
@@ -148,6 +152,28 @@ void pull_up() //pull up for a forward turn
       {
         line_following;
       }
+
+    /* case 5:
+      while (!(sl_val == HIGH && sr_val == HIGH)) //move until both of them are on line
+      {
+        line_following;
+      }
+      while (fsf_val == LOW)
+      {
+        left(); //finish this pull-up in the position forward as well for a more convenient use at the high/level
+      }
+    
+    case 6:
+      while (!(sl_val == HIGH && sr_val == HIGH)) //move until both of them are on line
+      {
+        line_following;
+      }
+      while (fsf_val == LOW)
+      {
+        right();
+      }
+    */
+
   }
 
 }
@@ -356,13 +382,11 @@ void loop()
   } 
   else if (fsf_val == LOW && fsr_val == HIGH && fsl_val == LOW)  // single right turn
   {
-    pull_up();
     swingTurnRight();
 
   }
   else if (fsf_val == LOW && fsr_val == LOW && fsl_val == HIGH)  // single left turn
   {
-    pull_up();
     swingTurnLeft();
     
   }
