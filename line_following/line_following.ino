@@ -1,7 +1,7 @@
 #include <Adafruit_MotorShield.h>
+#include <Servo.h>
 
 // Create the motor shield object with the default I2C address
-
 Adafruit_MotorShield AFMS = Adafruit_MotorShield();
 // Or, create it with a different I2C address (say for stacking)
 // Adafruit_MotorShield AFMS = Adafruit_MotorShield(0x61);
@@ -9,6 +9,19 @@ Adafruit_MotorShield AFMS = Adafruit_MotorShield();
 Adafruit_DCMotor *leftMotor = AFMS.getMotor(1);
 // You can also make another motor on port M2
 Adafruit_DCMotor *rightMotor = AFMS.getMotor(2);
+
+Servo myservo;  // create servo object to control a servo
+// twelve servo objects can be created on most boards
+int pos = 0;    // variable to store the servo position
+
+#define MAXRANG (520)//the max measurement value of the module is 520cm(a little bit longer
+than effective max range)
+#define ADCSOLUTION (1023.0)//ADC accuracy of Arduino UNO is 10bit
+// float distT, sensityT
+// select the input pin
+const int e18Sensor = 7;
+
+
 int sr = 6;   // sensor right
 int sl = 5;   // sensor left
 int fsr = 8;   // front sensor right
@@ -26,6 +39,7 @@ int tspeed = 255;  // turning speed
 int tdelay = 20;   // delay during turns
 int current_facing = 1;    //1 - north   2 - west   3 - south   4 - east
 int last_node_number = 0;
+int proximity_state = 0;
 
 void forward()
 {
@@ -240,7 +254,7 @@ void pointTurnRight() {
 }
 
 void swingTurnLeft(){
-  pull_up();
+  // pull_up();
 
   // Ignore the initial high reading (sensor on the line)
   while (digitalRead(fsf) == HIGH) {
@@ -298,50 +312,36 @@ void pointTurnLeft(){
     }
 }
 
-// Function for changing current facing to desirable facing, right now we assume point turn and may be adjusted further!!!
-void adjust_facing(int default_facing)
-{
-  //1 - north
-  //2 - west
-  //3 - south 
-  //4 - east
+void 180_turn(){
 
+  // Ignore the initial high reading (sensor on the line)
+  while (digitalRead(fsf) == HIGH) {
+    // Wait until sensor no longer detects the line (goes low)
+	pointLeft();
+  }
 
-  int facing_difference = current_facing - default_facing;
-  switch (facing_difference)
+  // Turn right until the sensor detects a line again (becomes high)
+  while (digitalRead(fsf) == LOW) {
+    // Keep turning right until a line is detected
+	pointLeft();
+  }
+
+  if (digitalRead(fsf) == HIGH)
   {
-    case -3:
-      pull_up();
-      pointTurnRight();
-      break;
-    case -2:
-      pull_up();
-      pointTurnRight();
-      pointTurnRight();
-      break;
-    case -1:
-      pull_up();
-      pointTurnLeft();
-      break;
-    case 0:
-      break;
-    case 1:
-      pull_up();
-      pointTurnRight();
-      break;
-    case 2:
-      pull_up();
-      pointTurnRight();
-      pointTurnRight(); //!!!!!!!!!!! Watch out for if this works
-      break;
-    case 3:
-      pull_up();
-      pointTurnLeft();
-      break;
-  } 
+  // Stop turning when another line is found
+  	stop();
+  }
   
-  current_facing = default_facing;
-
+  // update the facing
+  current_facing = current_facing + 2;
+    if (current_facing == 6)
+    {
+      current_facing = 2;
+    }
+    else if (current_facing == 5)
+    {
+      current_facing = 1;
+    }
 }
 
 void go_forward() //going straight untill the next single turn/junction
@@ -352,6 +352,41 @@ void go_forward() //going straight untill the next single turn/junction
   {
     line_following();
   } 
+}
+
+void angleforward(int x){
+  for (int i = pos; i <= pos + x; i += 1) { // goes from 0 degrees to 180 degrees
+    // in steps of 1 degree
+    myservo.write(i);              // tell servo to go to position in variable 'i'
+    delay(15);                       // waits 15ms for the servo to reach the position
+  }
+  pos += x; //update the global position value
+}
+
+void anglebackward(int x){
+  for (int i = pos; i >= pos - x; i -= 1) { // goes from 0 degrees to 180 degrees
+    // in steps of 1 degree
+    myservo.write(i);              // tell servo to go to position in variable 'pos'
+    delay(15);                       // waits 15ms for the servo to reach the position
+  }
+  pos -= x; //update the global position value
+}
+
+// detect the boxes and grab
+void grab() {
+  int i = 0;
+  while (proximity_state == LOW && i <= 2000)
+  {
+    forward();
+    i++;
+  }
+
+  if(proximity_state==HIGH)
+  {
+  angleforward(180);
+  delay(3000);
+  anglebackward(180);
+  }
 }
 
 void route_to_factory() //hardcoded route to the factory (just gets there)
@@ -418,15 +453,23 @@ void route_to_factory() //hardcoded route to the factory (just gets there)
   {
     last_node_number = 20;
     pointTurnLeft();
-    forward();
-    delay(100);
+    // try grabbing four times
+    grab_boxes();
+    grab_boxes();
+    grab_boxes();
+    grab_boxes();
   } 
-
 }
+
 
 void setup()
 {
   Serial.begin(9600);           // set up Serial library at 9600 bps
+  // set up for the grabbing mechanism
+  pinMode (e18Sensor, INPUT);
+  pinMode (led, INPUT);
+  myservo.attach(9);  // attaches the servo on pin 9 to the servo object
+
   Serial.println("Adafruit Motorshield v2 - DC Motor test!");
   if (!AFMS.begin())
   {         // create with the default frequency 1.6KHz
@@ -456,8 +499,14 @@ void loop()
   fsr_val = digitalRead(fsr);   // value for front sensor right
   fsl_val = digitalRead(fsl);   // value for front sensor left
   fsf_val = digitalRead(fsf); // value for front sensor forward
+  proximity_state = digitalRead(e18Sensor);
+
   digitalWrite(11, LOW);
-  if (/*fsf_val == HIGH && */fsr_val == LOW && fsl_val == LOW) // no junction or single turn detected so go straight 
+  // go to factory to pick up boxes
+  route_to_factory();
+  //make a 180 degrees turn
+  180_turn();
+  /* if (/*fsf_val == HIGH && */fsr_val == LOW && fsl_val == LOW) // no junction or single turn detected so go straight 
   {
     line_following();
   } 
@@ -475,8 +524,7 @@ void loop()
   {
     stop();
   }
-
-  /*{
+  {
     digitalWrite(11, HIGH);
   }*/
   // delay(20);
