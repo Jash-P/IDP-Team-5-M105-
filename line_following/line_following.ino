@@ -499,7 +499,7 @@ void loop()
   proximity_state = digitalRead(e18Sensor);
   crush_state = digitalRead(crush);
 
-  digitalWrite(11, LOW);
+  // digitalWrite(11, LOW);
   // go to factory to pick up boxes
   route_to_factory();
   // make a 180 degrees turn
