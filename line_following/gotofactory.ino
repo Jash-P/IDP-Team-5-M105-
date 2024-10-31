@@ -22,6 +22,7 @@ const int e18Sensor = 7;
 
 int sr = 6;   // sensor right
 int sl = 5;   // sensor left
+int LED = 2;  // LED indicator
 int fsr = 8;   // front sensor right
 int fsl = 9;   // front sensor left
 int fsf = 10; // front sensor forward
@@ -49,7 +50,7 @@ void setup()
   // set up for the grabbing mechanism
   pinMode (e18Sensor, INPUT);
   myservo.attach(9);  // attaches the servo on pin 9 to the servo object
-
+  
   Serial.println("Adafruit Motorshield v2 - DC Motor test!");
   if (!AFMS.begin())
   {         // create with the default frequency 1.6KHz
@@ -62,6 +63,7 @@ void setup()
   // Set the speed to start, from 0 (off) to 255 (max speed)
   leftMotor->setSpeed(150);
   rightMotor->setSpeed(150);
+  pinMode(LED, OUTPUT);
   pinMode(sr, INPUT);
   pinMode(sl, INPUT);
   pinMode(fsr, INPUT);
@@ -105,6 +107,7 @@ void right()
 // infinitesimal point turn to the right
 void pointRight()
 {
+  pull_up();
   leftMotor->setSpeed(150);
   rightMotor->setSpeed(150);
   leftMotor->run(BACKWARD);
@@ -125,6 +128,7 @@ void left()
 // infinitesimal point turn to the left
 void pointLeft()
 {
+  pull_up();
   leftMotor->setSpeed(150);
   rightMotor->setSpeed(150);
   leftMotor->run(FORWARD);
@@ -159,6 +163,7 @@ void line_following() //does not detect the junctions/turns!!!
           //{  // Both sensors on the line
           forward();  // Stop or make adjustments
           //}
+    update_values();
 }
 
 // pull up when a junction is detected so that back sensors align with the turning point, only for point turn
@@ -178,6 +183,7 @@ void pull_up() //pull up for a forward turn
       {junctionType = 5;}
     else if (fsf_val == LOW && fsl_val == HIGH && fsr_val == LOW)
       {junctionType = 6;}
+
 
 
   switch (junctionType)
@@ -431,17 +437,24 @@ void turn_180(){
 void go_forward() //going straight untill the next single turn/junction
 {
   forward();
-  while (fsr_val == HIGH or fsl_val == HIGH)
-  {
-    delay(20);
-    update_values();
-  }
-
-  while (fsr_val == LOW && fsl_val == LOW) // no junction or single turn detected so go straight 
+  while (fsr_val == HIGH || fsl_val == HIGH)
   {
     line_following();
     update_values();
-  } 
+  }
+  bool previous_state = false;
+  while (fsr_val == LOW && fsl_val == LOW || !previous_state) // no junction or single turn detected so go straight 
+  {
+    line_following();
+    previous_state = false;
+    update_values();
+    if (fsr_val == HIGH || fsl_val == HIGH){previous_state = true;delay(50); update_values();}
+    else {previous_state = false;}
+  }
+  stop();
+  digitalWrite(LED, HIGH);
+  delay(1000);
+  digitalWrite(LED, LOW);
 }
 
 // servo motor control 
@@ -477,7 +490,7 @@ void route_to_factory() //hardcoded route to the factory (just gets there)
 
   update_values();
   go_forward();
-
+  
   // 0 : forward; 1: left; 2:right
   int route2factory[] = {0, 0, 1, 0, 2, 2, 0, 0, 1, 1};
   int arraylength = 10;
@@ -486,7 +499,7 @@ void route_to_factory() //hardcoded route to the factory (just gets there)
     if (route2factory[i] == 0){
       go_forward();
     }
-    else if (routeo2factory[i] == 1){
+    else if (route2factory[i] == 1){
       swingTurnLeft();
       go_forward();
     }
@@ -506,6 +519,7 @@ void destroy_the_wall()
     line_following();
     update_values();
   }
+
   stop();
 }
 
