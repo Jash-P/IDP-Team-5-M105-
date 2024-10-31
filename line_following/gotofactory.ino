@@ -474,7 +474,7 @@ void route_to_factory() //hardcoded route to the factory (just gets there)
 
 
   update_values();
-  if (fsf_val == HIGH && fsr == HIGH, fsl == HIGH) //confirm that we are at junction 1
+  if (fsf_val == HIGH && fsr == HIGH && fsl == HIGH) //confirm that we are at junction 1
   {
     last_node_number = 1;
     go_forward();
