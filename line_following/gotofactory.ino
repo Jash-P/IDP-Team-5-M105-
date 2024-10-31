@@ -431,16 +431,20 @@ void turn_180(){
 void go_forward() //going straight untill the next single turn/junction
 {
   forward();
-  delay(1000);
+  while (fsr_val == HIGH or fsl_val == HIGH)
+  {
+    delay(20);
+    update_values();
+  }
 
-  update_values();
-  while (/*fsf_val == HIGH && */fsr_val == LOW && fsl_val == LOW) // no junction or single turn detected so go straight 
+  while (fsr_val == LOW && fsl_val == LOW) // no junction or single turn detected so go straight 
   {
     line_following();
     update_values();
   } 
 }
 
+// servo motor control 
 void angleforward(int x){
   for (int i = pos; i <= pos + x; i += 1) { // goes from 0 degrees to 180 degrees
     // in steps of 1 degree
@@ -466,105 +470,31 @@ void ramp_rotate() { //makes the box slide
   anglebackward(180);
 }
 
+// server motor control end
+
 void route_to_factory() //hardcoded route to the factory (just gets there)
 {
 
   update_values();
   go_forward();
 
+  // 0 : forward; 1: left; 2:right
+  int route2factory[0, 0, 1, 0, 2, 2, 0,0,1, 1];
+  int arraylength = sizeof(route2factory);
 
-  update_values();
-  if (fsf_val == HIGH && fsr == HIGH, fsl == HIGH) //confirm that we are at junction 1
-  {
-    last_node_number = 1;
-    go_forward();
-  } 
-
-
-  update_values();
-  if (fsf_val == HIGH, fsr == HIGH or fsl == HIGH) //confirm that we are at junction 2
-  {
-    stop();
-    delay(1000);
-    last_node_number = 2;
-    go_forward();
-  } 
-
-  update_values();
-  if (fsf_val == LOW, fsr == HIGH, fsl == HIGH) //confirm that we are at junction 3
-  {
-     stop();
-    delay(1000);
-    last_node_number = 3;
-    pointTurnRight();
-    go_forward();
-  } 
-
-  update_values();
-  if (fsf_val == HIGH && fsr == HIGH && fsl == HIGH) //confirm that we are at junction 4
-  {
-     stop();
-    delay(1000);
-    last_node_number = 4;
-    go_forward();
-  } 
-
-  update_values();
-  if (fsf_val == HIGH && fsr == HIGH && fsl == HIGH) //confirm that we are at junction 5
-  {
-     stop();
-    delay(1000);
-    last_node_number = 5;
-    go_forward();
-  } 
-
-  update_values();
-  if (fsf_val == HIGH && fsr == HIGH && fsl == HIGH) //confirm that we are at junction 6
-  {
-     stop();
-    delay(1000);
-    last_node_number = 6;
-    go_forward();
-  } 
-
-  update_values();
-  if (fsf_val == LOW && fsr == HIGH && fsl == HIGH) //confirm that we are at junction 7
-  {
-     stop();
-    delay(1000);
-    last_node_number = 7;
-    pointTurnLeft();
-    go_forward();
-  } 
-
-  update_values();
-  if (fsf_val == HIGH && fsr == LOW && fsl == HIGH) //confirm that we are at junction 9
-  {
-     stop();
-    delay(1000);
-    last_node_number = 9;
-    go_forward();
-  } 
-
-  update_values();
-  if (fsf_val == LOW && fsr == LOW && fsl == HIGH) //confirm that we are at the single turn after junction 9
-  {
-     stop();
-    delay(1000);
-    pointTurnLeft();
-    go_forward();
-  } 
-
-  update_values();
-  if (fsf_val == HIGH && fsr == LOW && fsl == HIGH) //confirm that we are at junction 20
-  {
-     stop();
-    delay(1000);
-    last_node_number = 20;
-    pointTurnLeft();
-    // try grabbing four times
-    turn_180();
-  } 
+  for (int i = 0 ; i < arraylength; i++){
+    if (route2factory[i] == 0){
+      go_forward();
+    }
+    else if (routeo2factory[i] == 1){
+      swingTurnLeft();
+      go_forward();
+    }
+    else if (route2factory[i] == 2){
+      swingTurnRight();
+      go_forward();
+    }
+  }
 }
 
 // push against the wall in order to pull up boxes
