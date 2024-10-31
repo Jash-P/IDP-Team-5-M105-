@@ -479,8 +479,8 @@ void route_to_factory() //hardcoded route to the factory (just gets there)
   go_forward();
 
   // 0 : forward; 1: left; 2:right
-  int route2factory[0, 0, 1, 0, 2, 2, 0,0,1, 1];
-  int arraylength = sizeof(route2factory);
+  int route2factory[] = {0, 0, 1, 0, 2, 2, 0, 0, 1, 1};
+  int arraylength = 10;
 
   for (int i = 0 ; i < arraylength; i++){
     if (route2factory[i] == 0){
@@ -513,13 +513,7 @@ void destroy_the_wall()
 // testing: should be able to follow the line, turn at a single turn where there's no junction and finally stop at a junction
 void loop()
 {
-  sr_val = digitalRead(sr);  // read right sensor
-  sl_val = digitalRead(sl);  // read left sensor
-  fsr_val = digitalRead(fsr);   // value for front sensor right
-  fsl_val = digitalRead(fsl);   // value for front sensor left
-  fsf_val = digitalRead(fsf); // value for front sensor forward
-  proximity_state = digitalRead(e18Sensor);
-  crush_state = digitalRead(crush);
+  update_values();
 
   // digitalWrite(11, LOW);
   // go to factory to pick up boxes
@@ -527,28 +521,4 @@ void loop()
   // make a 180 degrees turn
   //destroy_the_wall();
   //turn_180();
-
-  
-  // if (/*fsf_val == HIGH && */fsr_val == LOW && fsl_val == LOW) // no junction or single turn detected so go straight 
-  // {
-  //   line_following();
-  // } 
-  // else if (fsf_val == LOW && fsr_val == HIGH && fsl_val == LOW)  // single right turn
-  // {
-  //   swingTurnRight();
-
-  // }
-  // else if (fsf_val == LOW && fsr_val == LOW && fsl_val == HIGH)  // single left turn
-  // {
-  //   swingTurnLeft();
-    
-  // }
-  // else                                        // junction detected
-  // {
-  //   stop();
-  // }
-  // {
-  //   digitalWrite(11, HIGH);
-  // }
-  // delay(20);
 }
