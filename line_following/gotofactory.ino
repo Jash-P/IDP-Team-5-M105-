@@ -482,7 +482,7 @@ void route_to_factory() //hardcoded route to the factory (just gets there)
 
 
   update_values();
-  if (fsf_val == HIGH, fsr == HIGH or fsl == HIGH) //confirm that we are at junction 2
+  if (fsf_val == HIGH && fsr == HIGH && fsl == HIGH) //confirm that we are at junction 2
   {
     stop();
     delay(1000);
@@ -491,9 +491,9 @@ void route_to_factory() //hardcoded route to the factory (just gets there)
   } 
 
   update_values();
-  if (fsf_val == LOW, fsr == HIGH, fsl == HIGH) //confirm that we are at junction 3
+  if (fsf_val == LOW && fsr == HIGH && fsl == HIGH) //confirm that we are at junction 3
   {
-     stop();
+    stop();
     delay(1000);
     last_node_number = 3;
     pointTurnRight();
@@ -503,7 +503,7 @@ void route_to_factory() //hardcoded route to the factory (just gets there)
   update_values();
   if (fsf_val == HIGH && fsr == HIGH && fsl == HIGH) //confirm that we are at junction 4
   {
-     stop();
+    stop();
     delay(1000);
     last_node_number = 4;
     go_forward();
@@ -512,7 +512,7 @@ void route_to_factory() //hardcoded route to the factory (just gets there)
   update_values();
   if (fsf_val == HIGH && fsr == HIGH && fsl == HIGH) //confirm that we are at junction 5
   {
-     stop();
+    stop();
     delay(1000);
     last_node_number = 5;
     go_forward();
@@ -521,7 +521,7 @@ void route_to_factory() //hardcoded route to the factory (just gets there)
   update_values();
   if (fsf_val == HIGH && fsr == HIGH && fsl == HIGH) //confirm that we are at junction 6
   {
-     stop();
+    stop();
     delay(1000);
     last_node_number = 6;
     go_forward();
@@ -530,7 +530,7 @@ void route_to_factory() //hardcoded route to the factory (just gets there)
   update_values();
   if (fsf_val == LOW && fsr == HIGH && fsl == HIGH) //confirm that we are at junction 7
   {
-     stop();
+    stop();
     delay(1000);
     last_node_number = 7;
     pointTurnLeft();
@@ -540,7 +540,7 @@ void route_to_factory() //hardcoded route to the factory (just gets there)
   update_values();
   if (fsf_val == HIGH && fsr == LOW && fsl == HIGH) //confirm that we are at junction 9
   {
-     stop();
+    stop();
     delay(1000);
     last_node_number = 9;
     go_forward();
@@ -549,7 +549,7 @@ void route_to_factory() //hardcoded route to the factory (just gets there)
   update_values();
   if (fsf_val == LOW && fsr == LOW && fsl == HIGH) //confirm that we are at the single turn after junction 9
   {
-     stop();
+    stop();
     delay(1000);
     pointTurnLeft();
     go_forward();
@@ -558,7 +558,7 @@ void route_to_factory() //hardcoded route to the factory (just gets there)
   update_values();
   if (fsf_val == HIGH && fsr == LOW && fsl == HIGH) //confirm that we are at junction 20
   {
-     stop();
+    stop();
     delay(1000);
     last_node_number = 20;
     pointTurnLeft();
