@@ -33,7 +33,7 @@ int fsl_val = 0;   // value for front sensor left
 int fsf_val = 0; // value for front sensor forward
 int enr = 3;  // enable pin for right motor (PWM)
 int enl = 5;  // enable pin for left motor (PWM)
-int vspeed = 100;  // variable speed for forward motion
+int vspeed = 255;  // variable speed for forward motion
 int tspeed = 255;  // turning speed
 int tdelay = 1;   // delay during turns
 int current_facing = 1;    //1 - north   2 - west   3 - south   4 - east
@@ -471,99 +471,99 @@ void route_to_factory() //hardcoded route to the factory (just gets there)
   update_values();
   go_forward();
 
-  /*
+
   update_values();
-  if (fsf_val == HIGH, fsr == HIGH, fsl == HIGH) //confirm that we are at junction 1
+  if (fsf_val == HIGH && fsr == HIGH, fsl == HIGH) //confirm that we are at junction 1
   {
     last_node_number = 1;
     go_forward();
   } 
-  */
+
 
   update_values();
-  //if (fsf_val == HIGH, fsr == HIGH or fsl == HIGH) //confirm that we are at junction 2
- // }
+  if (fsf_val == HIGH, fsr == HIGH or fsl == HIGH) //confirm that we are at junction 2
+  {
     stop();
     delay(1000);
     last_node_number = 2;
     go_forward();
- // } 
+  } 
 
   update_values();
-  //if (fsf_val == LOW, fsr == HIGH, fsl == HIGH) //confirm that we are at junction 3
- // {
+  if (fsf_val == LOW, fsr == HIGH, fsl == HIGH) //confirm that we are at junction 3
+  {
      stop();
     delay(1000);
     last_node_number = 3;
     pointTurnRight();
     go_forward();
-  //} 
+  } 
 
   update_values();
-  //if (fsf_val == HIGH, fsr == HIGH, fsl == HIGH) //confirm that we are at junction 4
-  //{
+  if (fsf_val == HIGH, fsr == HIGH, fsl == HIGH) //confirm that we are at junction 4
+  {
      stop();
     delay(1000);
     last_node_number = 4;
     go_forward();
-  //} 
+  } 
 
   update_values();
-  //if (fsf_val == HIGH, fsr == HIGH, fsl == HIGH) //confirm that we are at junction 5
-  //{
+  if (fsf_val == HIGH, fsr == HIGH, fsl == HIGH) //confirm that we are at junction 5
+  {
      stop();
     delay(1000);
     last_node_number = 5;
     go_forward();
-  //} 
+  } 
 
   update_values();
-  //if (fsf_val == HIGH, fsr == HIGH, fsl == HIGH) //confirm that we are at junction 6
-  //{
+  if (fsf_val == HIGH, fsr == HIGH, fsl == HIGH) //confirm that we are at junction 6
+  {
      stop();
     delay(1000);
     last_node_number = 6;
     go_forward();
-  //} 
+  } 
 
   update_values();
-  //if (fsf_val == LOW, fsr == HIGH, fsl == HIGH) //confirm that we are at junction 7
-  //{
+  if (fsf_val == LOW, fsr == HIGH, fsl == HIGH) //confirm that we are at junction 7
+  {
      stop();
     delay(1000);
     last_node_number = 7;
     pointTurnLeft();
     go_forward();
-  //} 
+  } 
 
   update_values();
-  //if (fsf_val == HIGH, fsr == LOW, fsl == HIGH) //confirm that we are at junction 9
-  //{
+  if (fsf_val == HIGH, fsr == LOW, fsl == HIGH) //confirm that we are at junction 9
+  {
      stop();
     delay(1000);
     last_node_number = 9;
     go_forward();
-  //} 
+  } 
 
   update_values();
-  //if (fsf_val == LOW, fsr == LOW, fsl == HIGH) //confirm that we are at the single turn after junction 9
-  //{
+  if (fsf_val == LOW, fsr == LOW, fsl == HIGH) //confirm that we are at the single turn after junction 9
+  {
      stop();
     delay(1000);
     pointTurnLeft();
     go_forward();
-  //} 
+  } 
 
   update_values();
-  //if (fsf_val == HIGH, fsr == LOW, fsl == HIGH) //confirm that we are at junction 20
-  //{
+  if (fsf_val == HIGH, fsr == LOW, fsl == HIGH) //confirm that we are at junction 20
+  {
      stop();
     delay(1000);
     last_node_number = 20;
     pointTurnLeft();
     // try grabbing four times
     turn_180();
-  //} 
+  } 
 }
 
 // push against the wall in order to pull up boxes
