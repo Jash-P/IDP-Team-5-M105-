@@ -184,6 +184,8 @@ void pull_up() //pull up for a forward turn
     else if (fsf_val == LOW && fsl_val == HIGH && fsr_val == LOW)
       {junctionType = 6;}
 
+
+
   switch (junctionType)
   {
     case 1:
@@ -199,7 +201,6 @@ void pull_up() //pull up for a forward turn
         left(); //finish this pull-up in the position forward as well for a more convenient use at the high/level
         update_values();
       }
-      break;
 
     case 2:
       update_values();
@@ -214,10 +215,15 @@ void pull_up() //pull up for a forward turn
         right();
         update_values();
       }
-      break;
-      
 
     case 3:
+      update_values();
+      while (!(sl_val == HIGH && sr_val == HIGH)) //move until both of them are on line
+      {
+        line_following;
+        update_values();
+      }
+    
     case 4:
       update_values();
       while (!(sl_val == HIGH && sr_val == HIGH))
@@ -225,10 +231,8 @@ void pull_up() //pull up for a forward turn
         line_following;
         update_values();
       }
-      break;
 
-    /* We don't really need pull up for single turn because we only have 2 single turns and it's impossible to code unless it's disgusting
-    case 5:
+    /* case 5:
       while (!(sl_val == HIGH && sr_val == HIGH)) //move until both of them are on line
       {
         line_following;
@@ -237,7 +241,6 @@ void pull_up() //pull up for a forward turn
       {
         left(); //finish this pull-up in the position forward as well for a more convenient use at the high/level
       }
-      break;
     
     case 6:
       while (!(sl_val == HIGH && sr_val == HIGH)) //move until both of them are on line
@@ -248,8 +251,7 @@ void pull_up() //pull up for a forward turn
       {
         right();
       }
-      break;
-    */  
+    */
 
   }
 
@@ -300,7 +302,7 @@ void pointTurnRight() {
   while (digitalRead(fsf) == HIGH) {
     // Wait until sensor no longer detects the line (goes low)
 	pointRight();
-    update_values();
+  update_values();
   }
 
   // Turn right until the sensor detects a line again (becomes high)
@@ -308,7 +310,7 @@ void pointTurnRight() {
   while (digitalRead(fsf) == LOW) {
     // Keep turning right until a line is detected
 	pointRight();
-    update_values();
+  update_values();
   }
 
   update_values();
@@ -444,7 +446,6 @@ void go_forward() //going straight untill the next single turn/junction
   while (fsr_val == LOW && fsl_val == LOW || !previous_state) // no junction or single turn detected so go straight 
   {
     line_following();
-    previous_state = false;
     update_values();
     if (fsr_val == HIGH || fsl_val == HIGH){previous_state = true;delay(50); update_values();}
     else {previous_state = false;}
@@ -489,7 +490,7 @@ void route_to_factory() //hardcoded route to the factory (just gets there)
   update_values();
   go_forward();
   
-  // 0 : forward; 1: left; 2:right; 3: single right; 4: 
+  // 0 : forward; 1: left; 2:right
   int route2factory[] = {0, 0, 1, 0, 2, 2, 0, 0, 1, 1};
   int arraylength = 10;
 
@@ -525,12 +526,6 @@ void destroy_the_wall()
 // testing: should be able to follow the line, turn at a single turn where there's no junction and finally stop at a junction
 void loop()
 {
-  update_values();
-
-  // digitalWrite(11, LOW);
-  // go to factory to pick up boxes
-  route_to_factory();
-  // make a 180 degrees turn
-  //destroy_the_wall();
-  //turn_180();
+  turn_180();
+  delay(1000);
 }
