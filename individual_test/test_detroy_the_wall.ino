@@ -523,7 +523,7 @@ void destroy_the_wall()
 }
 
 
-// testing: should be able to follow the line, turn at a single turn where there's no junction and finally stop at a junction
+// testing: put the robot in front of the factory or place where we pick up boxes. It should go and stop when the grabber hits the wall
 void loop()
 {
   destroy_the_wall();

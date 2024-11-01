@@ -523,7 +523,7 @@ void destroy_the_wall()
 }
 
 
-// testing: should be able to follow the line, turn at a single turn where there's no junction and finally stop at a junction
+// testing: should be able to turn 180 degrees
 void loop()
 {
   turn_180();
