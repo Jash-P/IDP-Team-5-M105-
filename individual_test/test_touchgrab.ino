@@ -3,9 +3,9 @@ Servo myservo;  // create servo object to control a servo
 int pos = 0;    // variable to store the servo position
 // float distT, sensityT
 // select the input pin
-const int led = 6;
-int crashswitchPin = 3;
-int crash_state = LOW;
+const int led = 12;
+int crashswitchPin = 1;
+int crash_state = HIGH;
 
 void angleforward(int x)
 { // turns the angle of the servo forward by x degrees
@@ -33,7 +33,7 @@ void setup()
   // Serial init
   Serial.begin(9600);
   pinMode (led, OUTPUT);
-  myservo.attach(9); // attaches the servo on pin 9 to the servo object
+  myservo.attach(13); // attaches the servo on pin 9 to the servo object
   pinMode(crashswitchPin, INPUT); //sets the crashswitch as input
 }
 
@@ -46,11 +46,11 @@ void grab()
 
 void loop() 
 {
-  int val = digitalRead(crashswitchPin); // reads the input value of the crash switch
-  if(val==HIGH)
+  crash_state = digitalRead(crashswitchPin); // reads the input value of the crash switch
+  if(crash_state==LOW)
   {
-  digitalWrite(led, HIGH); // if switch is pressed, light pick-up LED and operate grab function
-  grab();
+    digitalWrite(led, HIGH); // if switch is pressed, light pick-up LED and operate grab function
+    grab();
   }
   else
   {
