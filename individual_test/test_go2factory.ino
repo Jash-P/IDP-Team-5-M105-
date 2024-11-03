@@ -522,12 +522,10 @@ void destroy_the_wall()
 }
 
 
-// testing: should be able to follow the line, turn at a single turn where there's no junction and finally stop at a junction
+// testing: put the robot at starting position, it should be able to navigate to factory 
 void loop()
 {
   update_values();
-
-  // digitalWrite(11, LOW);
   // go to factory to pick up boxes
   route_to_factory();
   // make a 180 degrees turn
