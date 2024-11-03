@@ -1,6 +1,6 @@
 #include <Adafruit_MotorShield.h>
 #include <Servo.h>
-
+// important notice: don't use pin7 because it's broken!!!!!!!!!!!!!!!!!!!!!
 // Create the motor shield object with the default I2C address
 Adafruit_MotorShield AFMS = Adafruit_MotorShield();
 // Or, create it with a different I2C address (say for stacking)

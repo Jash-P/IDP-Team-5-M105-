@@ -7,7 +7,7 @@ Adafruit_MotorShield AFMS = Adafruit_MotorShield();
 Adafruit_DCMotor *myMotor3 = AFMS.getMotor(3);
 // You can also make another motor on port M2
 //Adafruit_DCMotor *myOtherMotor = AFMS.getMotor(2);
-int inputPin = 3; // Connect button to input pin 3
+int inputPin = 7; // Connect button to input pin 3
 void setup() {
   Serial.begin(9600);           // set up Serial library at 9600 bps
   // Set the speed to start, from 0 (off) to 255 (max speed)
