@@ -267,7 +267,7 @@ void swingTurnRight() {
 	right();
   update_values();
   }
-
+  delay(500);
   // Turn right until the sensor detects a line again (becomes high)
   update_values();
   while (digitalRead(fsf) == LOW) {
@@ -336,7 +336,7 @@ void swingTurnLeft(){
 	left();
   update_values();
   }
-
+  delay(500);
   // Turn right until the sensor detects a line again (becomes high)
   update_values();
   while (digitalRead(fsf) == LOW) {
@@ -442,6 +442,7 @@ void go_forward()
     line_following();
     update_values();
   }
+  delay(100);
   // set a previous state for security check to avoid an accidental detection of junction that might occur within short time domain
   bool previous_state = false;
   while (fsr_val == LOW && fsl_val == LOW || !previous_state) // no junction or single turn detected so go straight 
@@ -486,14 +487,14 @@ void ramp_rotate() { //makes the box slide
 
 void route_to_factory() //hardcoded route to the factory (just gets there)
 {
-
+  
   update_values();
   go_forward();
   
   // 0 : forward; 1: left; 2:right
-  int route2factory[] = {0, 0, 1, 0, 2, 2, 0, 0, 1, 1};
-  // int arraylength = 10;
-  int arraylength = sizeof(route2factory) / sizeof(route2factory[0]);
+  int route2factory[] = {0, 0, 1, 2, 2, 0, 0, 1, 1};
+  int arraylength = 9;
+  // int arraylength = sizeof(route2factory) / sizeof(route2factory[0]);
 
   for (int i = 0 ; i < arraylength; i++){
     if (route2factory[i] == 0){
