@@ -107,7 +107,6 @@ void right()
 // infinitesimal point turn to the right
 void pointRight()
 {
-  pull_up();
   leftMotor->setSpeed(150);
   rightMotor->setSpeed(150);
   leftMotor->run(BACKWARD);
@@ -128,7 +127,6 @@ void left()
 // infinitesimal point turn to the left
 void pointLeft()
 {
-  pull_up();
   leftMotor->setSpeed(150);
   rightMotor->setSpeed(150);
   leftMotor->run(FORWARD);
@@ -403,7 +401,7 @@ void turn_180(){
   update_values();
   while (digitalRead(fsf) == HIGH) {
     // Wait until sensor no longer detects the line (goes low)
-	pointLeft();
+	pointRight();
   update_values();
   }
 
@@ -411,7 +409,7 @@ void turn_180(){
   update_values();
   while (digitalRead(fsf) == LOW) {
     // Keep turning right until a line is detected
-	pointLeft();
+	pointRight();
   update_values();
   }
 
@@ -432,6 +430,30 @@ void turn_180(){
     {
       current_facing = 1;
     }
+}
+
+void drop_at_red()
+{
+  leftMotor->setSpeed(150);
+  rightMotor->setSpeed(150);
+  leftMotor->run(FORWARD);
+  rightMotor->run(FORWARD);
+  update_values();
+  while (fsr_val == HIGH && fsl_val == HIGH)
+  {
+    delay(5);
+    update_values();
+  }
+  delay(300);
+  update_values();
+  stop();
+  turn_180();
+  leftMotor->setSpeed(150);
+  rightMotor->setSpeed(150);
+  leftMotor->run(FORWARD);
+  rightMotor->run(FORWARD);
+  delay(1000);
+  stop();
 }
 
 void go_forward() //going straight untill the next single turn/junction
@@ -526,6 +548,6 @@ void destroy_the_wall()
 // testing: should be able to turn 180 degrees
 void loop()
 {
-  turn_180();
+  drop_at_red();
   delay(1000);
 }

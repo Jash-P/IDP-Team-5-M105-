@@ -401,7 +401,7 @@ void turn_180(){
   update_values();
   while (digitalRead(fsf) == HIGH) {
     // Wait until sensor no longer detects the line (goes low)
-	pointLeft();
+	pointRight();
   update_values();
   }
 
@@ -409,7 +409,7 @@ void turn_180(){
   update_values();
   while (digitalRead(fsf) == LOW) {
     // Keep turning right until a line is detected
-	pointLeft();
+	pointRight();
   update_values();
   }
 
@@ -430,6 +430,30 @@ void turn_180(){
     {
       current_facing = 1;
     }
+}
+
+void drop_at_red()
+{
+  leftMotor->setSpeed(150);
+  rightMotor->setSpeed(150);
+  leftMotor->run(FORWARD);
+  rightMotor->run(FORWARD);
+  update_values();
+  while (fsr_val == HIGH && fsl_val == HIGH)
+  {
+    delay(5);
+    update_values();
+  }
+  delay(300);
+  update_values();
+  stop();
+  turn_180();
+  leftMotor->setSpeed(150);
+  rightMotor->setSpeed(150);
+  leftMotor->run(FORWARD);
+  rightMotor->run(FORWARD);
+  delay(1000);
+  stop();
 }
 
 //going straight until the next single turn/junction (if already on junction, ignore it and go to the next one)
