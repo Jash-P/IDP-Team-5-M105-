@@ -115,6 +115,7 @@ void right()
 // infinitesimal point turn to the right
 void pointRight()
 {
+  pull_up();
   leftMotor->setSpeed(150);
   rightMotor->setSpeed(150);
   leftMotor->run(BACKWARD);
@@ -135,6 +136,7 @@ void left()
 // infinitesimal point turn to the left
 void pointLeft()
 {
+  pull_up();
   leftMotor->setSpeed(150);
   rightMotor->setSpeed(150);
   leftMotor->run(FORWARD);
@@ -704,11 +706,6 @@ void destroy_the_wall()
 void loop()
 {
   update_values();
-
-  // digitalWrite(11, LOW);
-  // go to factory to pick up boxes
-  route_to_factory();
-  // make a 180 degrees turn
-  //destroy_the_wall();
-  //turn_180();
+  factory_to_red();
+  drop_at_red();
 }
