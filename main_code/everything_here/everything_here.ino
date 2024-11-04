@@ -26,7 +26,7 @@ int LED = 2;  // LED indicator
 int fsr = 8;   // front sensor right
 int fsl = 9;   // front sensor left
 int fsf = 10; // front sensor forward
-int crush = 3; // crush sensor
+int crush = 11; // crush sensor
 int sr_val = 0;  // value for right sensor
 int sl_val = 0;  // value for left sensor
 int fsr_val = 0;   // value for front sensor right
@@ -49,7 +49,7 @@ void setup()
   Serial.begin(9600);           // set up Serial library at 9600 bps
   // set up for the grabbing mechanism
   pinMode (e18Sensor, INPUT);
-  myservo1.attach(9);  // attaches the servo on pin 9 to the servo object
+  myservo1.attach(1);  // attaches the servo on pin 9 to the servo object
   myservo2.attach(4);
   Serial.println("Adafruit Motorshield v2 - DC Motor test!");
   if (!AFMS.begin())
@@ -88,8 +88,8 @@ void update_values()
 
 void forward()
 {
-  leftMotor->setSpeed(150);
-  rightMotor->setSpeed(150);
+  leftMotor->setSpeed(210);
+  rightMotor->setSpeed(210);
   leftMotor->run(BACKWARD);
   rightMotor->run(BACKWARD);
 }
@@ -105,8 +105,8 @@ void backward()
 // infinitesimal swing turn to the right
 void right()
 {
-  leftMotor->setSpeed(150);
-  rightMotor->setSpeed(150);
+  leftMotor->setSpeed(200);
+  rightMotor->setSpeed(200);
   leftMotor->run(BACKWARD);
   rightMotor->run(RELEASE);
   delay(tdelay);
@@ -125,8 +125,8 @@ void pointRight()
 // infinitesimal swing turn to the left
 void left()
 {
-  leftMotor->setSpeed(150);
-  rightMotor->setSpeed(150);
+  leftMotor->setSpeed(200);
+  rightMotor->setSpeed(200);
   leftMotor->run(RELEASE);
   rightMotor->run(BACKWARD);
   delay(tdelay);
@@ -510,6 +510,32 @@ void go_forward()
   digitalWrite(LED, LOW);
 }
 
+void go_backward()
+{
+  backward();
+  update_values();
+  while (fsr_val == HIGH || fsl_val == HIGH)
+  {
+    backward_line_following();
+    update_values();
+  }
+  delay(100);
+  // set a previous state for security check to avoid an accidental detection of junction that might occur within short time domain
+  bool previous_state = false;
+  while (fsr_val == LOW && fsl_val == LOW || !previous_state) // no junction or single turn detected so go straight 
+  {
+    backward_line_following();
+    update_values();
+    if (fsr_val == HIGH || fsl_val == HIGH){previous_state = true;delay(50); update_values();}
+    else {previous_state = false;}
+  }
+  stop();
+  digitalWrite(LED, HIGH);
+  delay(1000);
+  digitalWrite(LED, LOW);
+}
+
+
 // servo motor control 
 void angleforward(int x)
 {
@@ -554,6 +580,20 @@ void release()
 } 
 // server motor control end
 
+// push against the wall in order to pull up boxes
+void destroy_the_wall()
+{
+  update_values();
+  forward();
+  while (crush_state == LOW)
+  {
+    line_following();
+    update_values();
+  }
+
+  stop();
+}
+
 void route_to_factory() //hardcoded route to the factory (just gets there)
 {
   
@@ -561,8 +601,10 @@ void route_to_factory() //hardcoded route to the factory (just gets there)
   go_forward();
   
   // 0 : forward; 1: left; 2:right
-  int route2factory[] = {0, 0, 1, 2, 0, 2, 2, 2};
-  int arraylength = 9;
+  // int route2factory[] = {0, 0, 1, 2, 0, 2, 2};
+  int route2factory[] = {0};
+  int arraylength = 1;
+  // int arraylength = 9;
   // int arraylength = sizeof(route2factory) / sizeof(route2factory[0]);
 
   for (int i = 0 ; i < arraylength; i++){
@@ -578,6 +620,107 @@ void route_to_factory() //hardcoded route to the factory (just gets there)
       go_forward();
     }
   }
+  swingTurnRight();
+}
+
+void factory_to_one()
+{
+  update_values();
+  go_backward();
+  
+  // 0 : forward; 1: left; 2:right
+  int route[] = {2, 1, 1, 1, 0};
+  int arraylength = sizeof(route) / sizeof(route[0]);
+
+  for (int i = 0 ; i < arraylength; i++){
+    if (route[i] == 0){
+      go_forward();
+    }
+    else if (route[i] == 1){
+      swingTurnLeft();
+      go_forward();
+    }
+    else if (route[i] == 2){
+      swingTurnRight();
+      go_forward();
+    }
+  }
+}
+
+void one_to_two()
+{
+  update_values();
+  go_forward();
+  // 0 : forward; 1: left; 2:right
+  int route[] = {0, 0};
+  int arraylength = sizeof(route) / sizeof(route[0]);
+
+  for (int i = 0 ; i < arraylength; i++){
+    if (route[i] == 0){
+      go_forward();
+    }
+    else if (route[i] == 1){
+      swingTurnLeft();
+      go_forward();
+    }
+    else if (route[i] == 2){
+      swingTurnRight();
+      go_forward();
+    }
+  }
+}
+
+void two_to_three()
+{
+  update_values();
+  go_forward();
+  // 0 : forward; 1: left; 2:right
+  int route[] = {2, 2, 0};
+  int arraylength = sizeof(route) / sizeof(route[0]);
+
+  for (int i = 0 ; i < arraylength; i++){
+    if (route[i] == 0){
+      go_forward();
+    }
+    else if (route[i] == 1){
+      swingTurnLeft();
+      go_forward();
+    }
+    else if (route[i] == 2){
+      swingTurnRight();
+      go_forward();
+    }
+  }
+}
+
+void three_to_four()
+{
+  update_values();
+  go_forward();
+  // 0 : forward; 1: left; 2:right
+  int route[] = {0, 1};
+  int arraylength = sizeof(route) / sizeof(route[0]);
+
+  for (int i = 0 ; i < arraylength; i++){
+    if (route[i] == 0){
+      go_forward();
+    }
+    else if (route[i] == 1){
+      swingTurnLeft();
+      go_forward();
+    }
+    else if (route[i] == 2){
+      swingTurnRight();
+      go_forward();
+    }
+  }
+}
+
+void four_to_start()
+{
+  update_values();
+  go_forward();
+  destroy_the_wall();
 }
 
 // route from factory to area for magnetic box
@@ -607,7 +750,7 @@ void factory_to_red()
   }
 }
 
-void red_to_1()
+void red_to_one()
 {
   update_values();
   go_forward();
@@ -633,7 +776,7 @@ void red_to_1()
   }
 }
 
-void red_to_2()
+void red_to_two()
 {
   update_values();
   go_forward();
@@ -659,7 +802,7 @@ void red_to_2()
   }
 }
 
-void red_to_3()
+void red_to_three()
 {
   update_values();
   go_forward();
@@ -685,30 +828,21 @@ void red_to_3()
   }
 }
 
-
-// push against the wall in order to pull up boxes
-void destroy_the_wall()
-{
-  update_values();
-  while (crush_state == LOW)
-  {
-    line_following();
-    update_values();
-  }
-
-  stop();
-}
-
-
 // testing: should be able to follow the line, turn at a single turn where there's no junction and finally stop at a junction
 void loop()
 {
   update_values();
-
-  // digitalWrite(11, LOW);
-  // go to factory to pick up boxes
+  angleforward(180);
   route_to_factory();
-  // make a 180 degrees turn
-  //destroy_the_wall();
-  //turn_180();
+  destroy_the_wall();
+  ramp_rotate();
+  factory_to_one();
+  release();
+  one_to_two;
+  release();
+  two_to_three();
+  release();
+  three_to_four();
+  release();
+  four_to_start();
 }
