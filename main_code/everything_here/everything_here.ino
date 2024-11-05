@@ -26,14 +26,13 @@ int LED = 2;  // LED indicator
 int fsr = 8;   // front sensor right
 int fsl = 9;   // front sensor left
 int fsf = 10; // front sensor forward
-int crush = 11; // crush sensor
+int crush_sensor = 11; // crush sensor
 int sr_val = 0;  // value for right sensor
 int sl_val = 0;  // value for left sensor
 int fsr_val = 0;   // value for front sensor right
 int fsl_val = 0;   // value for front sensor left
 int fsf_val = 0; // value for front sensor forward
-int enr = 3;  // enable pin for right motor (PWM)
-int enl = 5;  // enable pin for left motor (PWM)
+int hall_sensor = 3;
 int vspeed = 255;  // variable speed for forward motion
 int tspeed = 255;  // turning speed
 int tdelay = 1;   // delay during turns
@@ -41,7 +40,7 @@ int current_facing = 1;    //1 - north   2 - west   3 - south   4 - east
 int last_node_number = 0;
 int proximity_state = 0;
 int crush_state = 0;
-
+int hall_state = 0;
 
 
 void setup()
@@ -69,8 +68,8 @@ void setup()
   pinMode(fsr, INPUT);
   pinMode(fsl, INPUT);
   pinMode(fsf, INPUT);
-  //pinMode(11, OUTPUT);
-  pinMode(crush, INPUT);
+  pinMode(crush_sensor, INPUT);
+  pinMode(hall_sensor, INPUT);
   delay(2000);  // delay for system start-up
 }
 
@@ -83,7 +82,9 @@ void update_values()
   fsl_val = digitalRead(fsl);   // value for front sensor left
   fsf_val = digitalRead(fsf); // value for front sensor forward
   proximity_state = digitalRead(e18Sensor);
-  crush_state = digitalRead(crush);
+  crush_state = digitalRead(crush_sensor);
+  hall_state = digitalRead(hall_sensor);
+
 }
 
 void forward()
@@ -105,8 +106,8 @@ void backward()
 // infinitesimal swing turn to the right
 void right()
 {
-  leftMotor->setSpeed(200);
-  rightMotor->setSpeed(200);
+  leftMotor->setSpeed(225);
+  rightMotor->setSpeed(225);
   leftMotor->run(BACKWARD);
   rightMotor->run(RELEASE);
   delay(tdelay);
@@ -125,8 +126,8 @@ void pointRight()
 // infinitesimal swing turn to the left
 void left()
 {
-  leftMotor->setSpeed(200);
-  rightMotor->setSpeed(200);
+  leftMotor->setSpeed(225);
+  rightMotor->setSpeed(225);
   leftMotor->run(RELEASE);
   rightMotor->run(BACKWARD);
   delay(tdelay);
@@ -508,6 +509,7 @@ void go_forward()
   digitalWrite(LED, HIGH);
   delay(1000);
   digitalWrite(LED, LOW);
+  update_values();
 }
 
 void go_backward()
@@ -585,7 +587,7 @@ void destroy_the_wall()
 {
   update_values();
   forward();
-  while (crush_state == LOW)
+  while (crush_state == HIGH)
   {
     line_following();
     update_values();
@@ -602,9 +604,9 @@ void route_to_factory() //hardcoded route to the factory (just gets there)
   
   // 0 : forward; 1: left; 2:right
   // int route2factory[] = {0, 0, 1, 2, 0, 2, 2};
-  int route2factory[] = {0};
-  int arraylength = 1;
   // int arraylength = 9;
+  int route2factory[] = {2};
+  int arraylength = 1;
   // int arraylength = sizeof(route2factory) / sizeof(route2factory[0]);
 
   for (int i = 0 ; i < arraylength; i++){
@@ -620,6 +622,7 @@ void route_to_factory() //hardcoded route to the factory (just gets there)
       go_forward();
     }
   }
+
   swingTurnRight();
 }
 
@@ -834,6 +837,7 @@ void loop()
   update_values();
   angleforward(180);
   route_to_factory();
+  anglebackward(180);
   destroy_the_wall();
   ramp_rotate();
   factory_to_one();
