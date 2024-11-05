@@ -26,7 +26,8 @@ int LED = 2;  // LED indicator
 int fsr = 8;   // front sensor right
 int fsl = 9;   // front sensor left
 int fsf = 10; // front sensor forward
-int crush_sensor = 11; // crush sensor
+int crush_sensor1 = 11; // first crush sensor
+int crush_sensor2 = 12; // second crush sensor
 int sr_val = 0;  // value for right sensor
 int sl_val = 0;  // value for left sensor
 int fsr_val = 0;   // value for front sensor right
@@ -40,6 +41,8 @@ int current_facing = 1;    //1 - north   2 - west   3 - south   4 - east
 int last_node_number = 0;
 int proximity_state = 0;
 int crush_state = 0;
+int crush_state1 = 0;
+int crush_state2 = 0;
 int hall_state = 0;
 
 
@@ -68,7 +71,8 @@ void setup()
   pinMode(fsr, INPUT);
   pinMode(fsl, INPUT);
   pinMode(fsf, INPUT);
-  pinMode(crush_sensor, INPUT);
+  pinMode(crush_sensor1, INPUT);
+  pinMode(crush_sensor2, INPUT);
   pinMode(hall_sensor, INPUT);
   delay(2000);  // delay for system start-up
 }
@@ -82,23 +86,25 @@ void update_values()
   fsl_val = digitalRead(fsl);   // value for front sensor left
   fsf_val = digitalRead(fsf); // value for front sensor forward
   proximity_state = digitalRead(e18Sensor);
-  crush_state = digitalRead(crush_sensor);
+  crush_state1 = digitalRead(crush_sensor1);
+  crush_state2 = digitalRead(crush_sensor2);
+  crush_state = crush_state1 && crush_state2;
   hall_state = digitalRead(hall_sensor);
 
 }
 
 void forward()
 {
-  leftMotor->setSpeed(210);
-  rightMotor->setSpeed(210);
+  leftMotor->setSpeed(200);
+  rightMotor->setSpeed(200);
   leftMotor->run(BACKWARD);
   rightMotor->run(BACKWARD);
 }
 
 void backward()
 {
-  leftMotor->setSpeed(150);
-  rightMotor->setSpeed(150);
+  leftMotor->setSpeed(100);
+  rightMotor->setSpeed(100);
   leftMotor->run(FORWARD);
   rightMotor->run(FORWARD);
 }
@@ -106,8 +112,8 @@ void backward()
 // infinitesimal swing turn to the right
 void right()
 {
-  leftMotor->setSpeed(225);
-  rightMotor->setSpeed(225);
+  leftMotor->setSpeed(200);
+  rightMotor->setSpeed(200);
   leftMotor->run(BACKWARD);
   rightMotor->run(RELEASE);
   delay(tdelay);
@@ -126,8 +132,8 @@ void pointRight()
 // infinitesimal swing turn to the left
 void left()
 {
-  leftMotor->setSpeed(225);
-  rightMotor->setSpeed(225);
+  leftMotor->setSpeed(200);
+  rightMotor->setSpeed(200);
   leftMotor->run(RELEASE);
   rightMotor->run(BACKWARD);
   delay(tdelay);
@@ -177,6 +183,7 @@ void backward_line_following() //does not detect the junctions/turns!!!
 {
     update_values();
     if (sl_val == LOW && sr_val == LOW)
+
         {  // Both sensors off the line (on the background)
           backward();  // Move forward
         }
@@ -296,7 +303,7 @@ void swingTurnRight() {
 	right();
   update_values();
   }
-  delay(500);
+  delay(250);
   // Turn right until the sensor detects a line again (becomes high)
   update_values();
   while (digitalRead(fsf) == LOW) {
@@ -483,6 +490,10 @@ void drop_at_red()
   rightMotor->run(FORWARD);
   delay(1000);
   stop();
+  while (hall_state == HIGH)
+  {
+    release();
+  }
 }
 
 //going straight until the next single turn/junction (if already on junction, ignore it and go to the next one)
@@ -560,11 +571,12 @@ void anglebackward(int x)
 }
 
 // makes the box slide
+
+
 void ramp_rotate() 
 { 
   angleforward(180);
   delay(3000);
-  anglebackward(180);
 }
 
 // control the gate to allow box fall
@@ -592,8 +604,12 @@ void destroy_the_wall()
     line_following();
     update_values();
   }
-
   stop();
+  delay(500);
+  backward();
+  delay(1500);
+  update_values();
+
 }
 
 void route_to_factory() //hardcoded route to the factory (just gets there)
@@ -629,10 +645,10 @@ void route_to_factory() //hardcoded route to the factory (just gets there)
 void factory_to_one()
 {
   update_values();
-  go_backward();
+  //go_backward();
   
   // 0 : forward; 1: left; 2:right
-  int route[] = {2, 1, 1, 1, 0};
+  int route[] = {0, 1, 1, 1, 1, 0};
   int arraylength = sizeof(route) / sizeof(route[0]);
 
   for (int i = 0 ; i < arraylength; i++){
@@ -751,6 +767,7 @@ void factory_to_red()
       go_forward();
     }
   }
+  drop_at_red();
 }
 
 void red_to_one()
@@ -840,9 +857,15 @@ void loop()
   anglebackward(180);
   destroy_the_wall();
   ramp_rotate();
+  turn_180();
+  
+  if (hall_state == HIGH)
+  {
+    factory_to_red();
+  }
   factory_to_one();
   release();
-  one_to_two;
+  one_to_two();
   release();
   two_to_three();
   release();
