@@ -28,6 +28,7 @@ int fsl = 9;   // front sensor left
 int fsf = 10; // front sensor forward
 int crush_sensor1 = 11; // first crush sensor
 int crush_sensor2 = 12; // second crush sensor
+int LED_blue = 13;
 int sr_val = 0;  // value for right sensor
 int sl_val = 0;  // value for left sensor
 int fsr_val = 0;   // value for front sensor right
@@ -44,6 +45,8 @@ int crush_state = 0;
 int crush_state1 = 0;
 int crush_state2 = 0;
 int hall_state = 0;
+
+bool blueLEDState = false;
 
 
 void setup()
@@ -74,6 +77,7 @@ void setup()
   pinMode(crush_sensor1, INPUT);
   pinMode(crush_sensor2, INPUT);
   pinMode(hall_sensor, INPUT);
+  pinMode(LED_blue, output)
   delay(2000);  // delay for system start-up
 }
 
@@ -90,7 +94,7 @@ void update_values()
   crush_state2 = digitalRead(crush_sensor2);
   crush_state = crush_state1 && crush_state2;
   hall_state = digitalRead(hall_sensor);
-
+  
 }
 
 void forward()
@@ -575,7 +579,7 @@ void anglebackward(int x)
 
 void ramp_rotate() 
 { 
-  angleforward(180);
+  angleforward(210);
   delay(3000);
 }
 
@@ -607,7 +611,7 @@ void destroy_the_wall()
   stop();
   delay(500);
   backward();
-  delay(1500);
+  delay(1000);
   update_values();
 
 }
@@ -717,7 +721,7 @@ void three_to_four()
   update_values();
   go_forward();
   // 0 : forward; 1: left; 2:right
-  int route[] = {0, 1};
+  int route[] = {0, 0};
   int arraylength = sizeof(route) / sizeof(route[0]);
 
   for (int i = 0 ; i < arraylength; i++){
@@ -733,6 +737,8 @@ void three_to_four()
       go_forward();
     }
   }
+  swingTurnLeft();
+  swingTurnLeft();
 }
 
 void four_to_start()
@@ -848,6 +854,22 @@ void red_to_three()
   }
 }
 
+blueLEDBlink()
+{
+  if(millis() < 1000)
+  {
+    if(blueLEDState)
+    {
+      digitalWrite(13,HIGH);
+      blueLEDState = false;
+    }  else if(!blueLEDState)
+    {
+      digitalWrite(13,LOW);
+      blueLEDState = true;
+    }
+  }
+}
+
 // testing: should be able to follow the line, turn at a single turn where there's no junction and finally stop at a junction
 void loop()
 {
@@ -857,6 +879,8 @@ void loop()
   anglebackward(180);
   destroy_the_wall();
   ramp_rotate();
+  forward();
+  delay(300);
   turn_180();
   
   if (hall_state == HIGH)
