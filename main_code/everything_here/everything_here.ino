@@ -87,7 +87,7 @@ void setup()
   delay(2000);  // delay for system start-up
 }
 
-
+// update the reading of each component together
 void update_values()
 {
   sr_val = digitalRead(sr);  // read right sensor
@@ -102,6 +102,7 @@ void update_values()
   hall_state = digitalRead(hall_sensor);
 }
 
+// flash the blue LED with a frequency of 2Hz
 void blueBlink()
 {
   // blink the blue LED independently from other operations in the main loop
@@ -191,7 +192,7 @@ void stop()
   rightMotor->run(RELEASE);
 }
 
-
+// job of the two back sensors
 void line_following() //does not detect the junctions/turns!!!
 {
     update_values();
@@ -213,6 +214,7 @@ void line_following() //does not detect the junctions/turns!!!
           //}
     update_values();
 }
+
 
 void backward_line_following() //does not detect the junctions/turns!!!
 {
@@ -326,7 +328,7 @@ void pull_up() //pull up for a forward turn
 
 }
 
-// This function is for swing turn. !!!A point to consider: we still need pull up for swing turn
+// This function is for swing turn.
 void swingTurnRight() {
   // set the state so that ismoving function can tell it's turning
   isMoving = 0;
@@ -483,6 +485,7 @@ void pointTurnLeft(){
   isMoving = 1;
 }
 
+// turn by 180 degrees
 void turn_180(){
   // set the speed so that ismoving function can tell it's turning
   isMoving = 0;
@@ -525,6 +528,7 @@ void turn_180(){
   isMoving = 1;
 }
 
+// drop magnetic boxes at red area
 void drop_at_red()
 {
   leftMotor->setSpeed(150);
@@ -629,9 +633,7 @@ void anglebackward(int x)
   pos1 -= x; //update the global position value
 }
 
-// makes the box slide
-
-
+// makes the box slide on the ramp
 void ramp_rotate() 
 { 
   angleforward(200);
@@ -651,7 +653,7 @@ void release()
  delay(15); // waits 15 ms for the servo to reach the position 
  } 
 } 
-// server motor control end
+// servo motor control end
 
 // push against the wall in order to pull up boxes
 void destroy_the_wall()
@@ -708,6 +710,7 @@ void route_to_factory() //hardcoded route to the factory (just gets there)
   swingTurnRight();
 }
 
+// hardcode for route from factory to the first deposit area
 void factory_to_one()
 {
   update_values();
@@ -732,6 +735,7 @@ void factory_to_one()
   }
 }
 
+// hardcode for the route from first deposit area to the second one
 void one_to_two()
 {
   update_values();
@@ -755,6 +759,7 @@ void one_to_two()
   }
 }
 
+// hardcode for the route from second deposit area to the third one
 void two_to_three()
 {
   update_values();
@@ -777,6 +782,8 @@ void two_to_three()
     }
   }
 }
+
+// hardcode for the route from third deposit area to the fourth one
 
 void three_to_four()
 {
@@ -803,6 +810,7 @@ void three_to_four()
   swingTurnLeft();
 }
 
+// hardcode for the route from fourth deposit area to the start point
 void four_to_start()
 {
   update_values();
@@ -847,6 +855,7 @@ void factory_to_red()
   drop_at_red();
 }
 
+// route from first deposit area to red area
 void one_to_red()
 {
   update_values();
@@ -876,6 +885,7 @@ void one_to_red()
   drop_at_red();
 }
 
+// route from second deposit area to red area
 void two_to_red()
 {
   update_values();
@@ -905,6 +915,7 @@ void two_to_red()
   drop_at_red();
 }
 
+// route from third deposit area to red area
 void three_to_red()
 {
   update_values();
@@ -934,6 +945,7 @@ void three_to_red()
   drop_at_red();
 }
 
+// route from red area to first deposit area
 void red_to_one()
 {
   update_values();
@@ -960,6 +972,7 @@ void red_to_one()
   }
 }
 
+// route from red area to second deposit area
 void red_to_two()
 {
   update_values();
@@ -986,6 +999,7 @@ void red_to_two()
   }
 }
 
+// route from red area to third deposit area
 void red_to_three()
 {
   update_values();
@@ -1012,6 +1026,7 @@ void red_to_three()
   }
 }
 
+// light up red LED when magnetic boxes are detected, light up green one otherwise
 void magnetic_detection(){
   if(hall_state)
   {
