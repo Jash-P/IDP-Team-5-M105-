@@ -20,6 +20,14 @@ int pos2 = 0;    // variable to store the release mechanism angular position
 // select the input pin
 const int e18Sensor = 7;
 
+// control the blue LED to light up when car is moving
+const int LED_blue = 13;
+int LED_green = 15;
+unsigned long previousMillis = 0;  // Store the last time the LED was toggled
+const long interval = 500;  // Interval to toggle LED, 500ms
+bool blueLEDState = false;
+// end control of blue LED
+
 int sr = 6;   // sensor right
 int sl = 5;   // sensor left
 int LED = 2;  // LED indicator
@@ -28,7 +36,6 @@ int fsl = 9;   // front sensor left
 int fsf = 10; // front sensor forward
 int crush_sensor1 = 11; // first crush sensor
 int crush_sensor2 = 12; // second crush sensor
-int LED_blue = 13;
 int sr_val = 0;  // value for right sensor
 int sl_val = 0;  // value for left sensor
 int fsr_val = 0;   // value for front sensor right
@@ -45,8 +52,7 @@ int crush_state = 0;
 int crush_state1 = 0;
 int crush_state2 = 0;
 int hall_state = 0;
-
-bool blueLEDState = false;
+bool isMoving = 1;  // indicate whether two motors are both moving 
 
 
 void setup()
@@ -77,7 +83,7 @@ void setup()
   pinMode(crush_sensor1, INPUT);
   pinMode(crush_sensor2, INPUT);
   pinMode(hall_sensor, INPUT);
-  pinMode(LED_blue, output)
+  pinMode(LED_blue, OUTPUT);
   delay(2000);  // delay for system start-up
 }
 
@@ -94,11 +100,35 @@ void update_values()
   crush_state2 = digitalRead(crush_sensor2);
   crush_state = crush_state1 && crush_state2;
   hall_state = digitalRead(hall_sensor);
-  
+}
+
+void blueBlink()
+{
+  // blink the blue LED independently from other operations in the main loop
+  unsigned long currentMillis = millis();  // Get the current time in milliseconds
+  if (isMoving) 
+  { 
+    // Check if enough time has passed to toggle the LED
+    if (currentMillis - previousMillis >= interval) 
+    {
+      // Save the last time the LED was toggled
+      previousMillis = currentMillis;
+      
+      // Toggle the LED state (ON/OFF)
+      blueLEDState = !blueLEDState;
+      digitalWrite(LED_blue, blueLEDState ? HIGH : LOW);  // Set the LED to the current state
+    }
+  } 
+  else 
+  {
+    // If the vehicle is not moving, turn off the LED
+    digitalWrite(LED_blue, LOW);
+  }
 }
 
 void forward()
 {
+  blueBlink();
   leftMotor->setSpeed(200);
   rightMotor->setSpeed(200);
   leftMotor->run(BACKWARD);
@@ -116,8 +146,8 @@ void backward()
 // infinitesimal swing turn to the right
 void right()
 {
-  leftMotor->setSpeed(200);
-  rightMotor->setSpeed(200);
+  leftMotor->setSpeed(220);
+  rightMotor->setSpeed(220);
   leftMotor->run(BACKWARD);
   rightMotor->run(RELEASE);
   delay(tdelay);
@@ -126,8 +156,8 @@ void right()
 // infinitesimal point turn to the right
 void pointRight()
 {
-  leftMotor->setSpeed(150);
-  rightMotor->setSpeed(150);
+  leftMotor->setSpeed(200);
+  rightMotor->setSpeed(200);
   leftMotor->run(BACKWARD);
   rightMotor->run(FORWARD);
   delay(tdelay);
@@ -136,8 +166,8 @@ void pointRight()
 // infinitesimal swing turn to the left
 void left()
 {
-  leftMotor->setSpeed(200);
-  rightMotor->setSpeed(200);
+  leftMotor->setSpeed(220);
+  rightMotor->setSpeed(220);
   leftMotor->run(RELEASE);
   rightMotor->run(BACKWARD);
   delay(tdelay);
@@ -146,8 +176,8 @@ void left()
 // infinitesimal point turn to the left
 void pointLeft()
 {
-  leftMotor->setSpeed(150);
-  rightMotor->setSpeed(150);
+  leftMotor->setSpeed(200);
+  rightMotor->setSpeed(200);
   leftMotor->run(FORWARD);
   rightMotor->run(BACKWARD);
   delay(tdelay);
@@ -160,6 +190,7 @@ void stop()
   leftMotor->run(RELEASE);
   rightMotor->run(RELEASE);
 }
+
 
 void line_following() //does not detect the junctions/turns!!!
 {
@@ -297,7 +328,8 @@ void pull_up() //pull up for a forward turn
 
 // This function is for swing turn. !!!A point to consider: we still need pull up for swing turn
 void swingTurnRight() {
-
+  // set the state so that ismoving function can tell it's turning
+  isMoving = 0;
   // pull_up();
 
   // Ignore the initial high reading (sensor on the line)
@@ -330,16 +362,21 @@ void swingTurnRight() {
   {
     current_facing = 4;
   }
+  // change the state back so that the blue LED lights up again
+  isMoving = 1;
+
 }
 
 void pointTurnRight() {
+  // set the speed so that ismoving function can tell it's turning
+  isMoving = 0;
   pull_up();
 
   // Ignore the initial high reading (sensor on the line)
   update_values();
   while (digitalRead(fsf) == HIGH) {
     // Wait until sensor no longer detects the line (goes low)
-	pointRight();
+	  pointRight();
     update_values();
   }
 
@@ -347,7 +384,7 @@ void pointTurnRight() {
   update_values();
   while (digitalRead(fsf) == LOW) {
     // Keep turning right until a line is detected
-	pointRight();
+	  pointRight();
     update_values();
   }
 
@@ -364,14 +401,19 @@ void pointTurnRight() {
   {
     current_facing = 4;
   }
+  // change the speed back so that the blue LED lights up again
+  isMoving = 1;
 }
 
 void swingTurnLeft(){
+  // set the speed so that ismoving function can tell it's turning
+  isMoving = 0;
   // pull_up();
 
   // Ignore the initial high reading (sensor on the line)
   update_values();
   while (digitalRead(fsf) == HIGH) {
+  blueBlink();
   // Wait until sensor no longer detects the line (goes low)
 	left();
   update_values();
@@ -380,6 +422,7 @@ void swingTurnLeft(){
   // Turn right until the sensor detects a line again (becomes high)
   update_values();
   while (digitalRead(fsf) == LOW) {
+  blueBlink();
     // Keep turning right until a line is detected
 	left();
   update_values();
@@ -398,10 +441,13 @@ void swingTurnLeft(){
     {
       current_facing = 1;
     }
+  // change the speed back so that the blue LED lights up again
+  isMoving = 1;
 }
 
 void pointTurnLeft(){
-
+  // set the speed so that ismoving function can tell it's turning
+  isMoving = 0;
   pull_up();
 
   // Ignore the initial high reading (sensor on the line)
@@ -433,13 +479,17 @@ void pointTurnLeft(){
     {
       current_facing = 1;
     }
+  // change the speed back so that the blue LED lights up again
+  isMoving = 1;
 }
 
 void turn_180(){
-
+  // set the speed so that ismoving function can tell it's turning
+  isMoving = 0;
   // Ignore the initial high reading (sensor on the line)
   update_values();
   while (digitalRead(fsf) == HIGH) {
+  blueBlink();
     // Wait until sensor no longer detects the line (goes low)
 	pointRight();
   update_values();
@@ -448,6 +498,7 @@ void turn_180(){
   // Turn right until the sensor detects a line again (becomes high)
   update_values();
   while (digitalRead(fsf) == LOW) {
+  blueBlink();
     // Keep turning right until a line is detected
 	pointRight();
   update_values();
@@ -470,6 +521,8 @@ void turn_180(){
     {
       current_facing = 1;
     }
+  // change the speed back so that the blue LED lights up again
+  isMoving = 1;
 }
 
 void drop_at_red()
@@ -507,6 +560,7 @@ void go_forward()
   update_values();
   while (fsr_val == HIGH || fsl_val == HIGH)
   {
+    blueBlink();
     line_following();
     update_values();
   }
@@ -515,6 +569,7 @@ void go_forward()
   bool previous_state = false;
   while (fsr_val == LOW && fsl_val == LOW || !previous_state) // no junction or single turn detected so go straight 
   {
+    blueBlink();
     line_following();
     update_values();
     if (fsr_val == HIGH || fsl_val == HIGH){previous_state = true;delay(50); update_values();}
@@ -522,7 +577,7 @@ void go_forward()
   }
   stop();
   digitalWrite(LED, HIGH);
-  delay(1000);
+  // delay(0);
   digitalWrite(LED, LOW);
   update_values();
 }
@@ -579,7 +634,7 @@ void anglebackward(int x)
 
 void ramp_rotate() 
 { 
-  angleforward(210);
+  angleforward(200);
   delay(3000);
 }
 
@@ -623,14 +678,21 @@ void route_to_factory() //hardcoded route to the factory (just gets there)
   go_forward();
   
   // 0 : forward; 1: left; 2:right
-  // int route2factory[] = {0, 0, 1, 2, 0, 2, 2};
+  int route2factory[] = {0, 0, 1, 2, 0, 2, 2};
   // int arraylength = 9;
-  int route2factory[] = {2};
-  int arraylength = 1;
-  // int arraylength = sizeof(route2factory) / sizeof(route2factory[0]);
+  // int route2factory[] = {2};
+  // int arraylength = 1;
+  int arraylength = sizeof(route2factory) / sizeof(route2factory[0]);
 
   for (int i = 0 ; i < arraylength; i++){
-    if (route2factory[i] == 0){
+    if (i == 2)
+    {
+      swingTurnLeft();
+      swingTurnLeft();
+    
+    go_forward();
+    }
+    else if (route2factory[i] == 0){
       go_forward();
     }
     else if (route2factory[i] == 1){
@@ -721,7 +783,7 @@ void three_to_four()
   update_values();
   go_forward();
   // 0 : forward; 1: left; 2:right
-  int route[] = {0, 0};
+  int route[] = {0};
   int arraylength = sizeof(route) / sizeof(route[0]);
 
   for (int i = 0 ; i < arraylength; i++){
@@ -745,18 +807,24 @@ void four_to_start()
 {
   update_values();
   go_forward();
-  destroy_the_wall();
+  while (crush_state == HIGH)
+  {
+    forward();
+  }
+  stop();
 }
 
 // route from factory to area for magnetic box
+// Important!!!!! need to tune the forward distance for every route to red area
 void factory_to_red()
 {
   update_values();
   go_forward();
   
   // 0 : forward; 1: left; 2:right
-  int route2factory[] = {2, 1, 0, 0, 2, 0};
+  // int route2factory[] = {2, 1, 0, 0, 2, 0};
   // int arraylength = 6;
+  int route2factory[] = {2, 1, 0, 0, 2}; // ignore the last one and go forward for a fixed amount of distance before 180 turn
   int arraylength = sizeof(route2factory) / sizeof(route2factory[0]);
 
   for (int i = 0 ; i < arraylength; i++)
@@ -773,6 +841,96 @@ void factory_to_red()
       go_forward();
     }
   }
+  // forward a certain distance which needs to be tuned!!!
+  forward();
+  delay(500);
+  drop_at_red();
+}
+
+void one_to_red()
+{
+  update_values();
+  go_forward();
+  
+  // 0 : forward; 1: left; 2:right
+  int route[] = {0, 0, 0, 0, 2}; // ignore the last one and go forward for a fixed amount of distance before 180 turn
+  int arraylength = sizeof(route) / sizeof(route[0]);
+
+  for (int i = 0 ; i < arraylength; i++)
+  {
+    if (route[i] == 0){
+      go_forward();
+    }
+    else if (route[i] == 1){
+      swingTurnLeft();
+      go_forward();
+    }
+    else if (route[i] == 2){
+      swingTurnRight();
+      go_forward();
+    }
+  }
+  // forward a certain distance which needs to be tuned!!!
+  forward();
+  delay(500);
+  drop_at_red();
+}
+
+void two_to_red()
+{
+  update_values();
+  go_forward();
+  
+  // 0 : forward; 1: left; 2:right
+  int route[] = {0, 2}; // ignore the last one and go forward for a fixed amount of distance before 180 turn
+  int arraylength = sizeof(route) / sizeof(route[0]);
+
+  for (int i = 0 ; i < arraylength; i++)
+  {
+    if (route[i] == 0){
+      go_forward();
+    }
+    else if (route[i] == 1){
+      swingTurnLeft();
+      go_forward();
+    }
+    else if (route[i] == 2){
+      swingTurnRight();
+      go_forward();
+    }
+  }
+  // forward a certain distance which needs to be tuned!!!
+  forward();
+  delay(500);
+  drop_at_red();
+}
+
+void three_to_red()
+{
+  update_values();
+  go_forward();
+  
+  // 0 : forward; 1: left; 2:right
+  int route[] = {0, 0, 0, 0, 2, 0, 2, 0, 0, 2, 0}; // ignore the last one and go forward for a fixed amount of distance before 180 turn
+  int arraylength = sizeof(route) / sizeof(route[0]);
+
+  for (int i = 0 ; i < arraylength; i++)
+  {
+    if (route[i] == 0){
+      go_forward();
+    }
+    else if (route[i] == 1){
+      swingTurnLeft();
+      go_forward();
+    }
+    else if (route[i] == 2){
+      swingTurnRight();
+      go_forward();
+    }
+  }
+  // forward a certain distance which needs to be tuned!!!
+  forward();
+  delay(500);
   drop_at_red();
 }
 
@@ -782,8 +940,8 @@ void red_to_one()
   go_forward();
   
   // 0 : forward; 1: left; 2:right
-  int route2factory[] = {0, 1, 0, 0, 0};
-  // int arraylength = 5;
+  int route2factory[] = {0, 0, 1, 0, 0, 1, 1, 0};
+  // int arraylength = 8;
   int arraylength = sizeof(route2factory) / sizeof(route2factory[0]);
 
   for (int i = 0 ; i < arraylength; i++)
@@ -808,8 +966,8 @@ void red_to_two()
   go_forward();
   
   // 0 : forward; 1: left; 2:right
-  int route2factory[] = {0, 1};
-  // int arraylength = 2;
+  int route2factory[] = {0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0};
+  // int arraylength = 11;
   int arraylength = sizeof(route2factory) / sizeof(route2factory[0]);
 
   for (int i = 0 ; i < arraylength; i++)
@@ -834,8 +992,8 @@ void red_to_three()
   go_forward();
   
   // 0 : forward; 1: left; 2:right
-  int route2factory[] = {1};
-  // int arraylength = 6;
+  int route2factory[] = {0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 2, 2, 0};
+  // int arraylength = 15;
   int arraylength = sizeof(route2factory) / sizeof(route2factory[0]);
 
   for (int i = 0 ; i < arraylength; i++)
@@ -854,46 +1012,126 @@ void red_to_three()
   }
 }
 
-blueLEDBlink()
-{
-  if(millis() < 1000)
+void magnetic_detection(){
+  if(hall_state)
   {
-    if(blueLEDState)
-    {
-      digitalWrite(13,HIGH);
-      blueLEDState = false;
-    }  else if(!blueLEDState)
-    {
-      digitalWrite(13,LOW);
-      blueLEDState = true;
-    }
+    analogWrite(LED_green, 255);
+    digitalWrite(LED, LOW);
+  } else if(!hall_state)
+  {
+    analogWrite(LED_green, 0);
+    digitalWrite(LED, HIGH);
   }
 }
 
-// testing: should be able to follow the line, turn at a single turn where there's no junction and finally stop at a junction
+
 void loop()
 {
+  // start control AGV movement
   update_values();
   angleforward(180);
   route_to_factory();
-  anglebackward(180);
+  anglebackward(150);
   destroy_the_wall();
   ramp_rotate();
   forward();
+  magnetic_detection();
   delay(300);
   turn_180();
   
-  if (hall_state == HIGH)
-  {
-    factory_to_red();
-  }
+  // if (hall_state == HIGH)
+  // {
+  //   factory_to_red();
+  //   red_to_one();
+  //   release();
+  //   if (hall_state == HIGH)
+  //   {
+  //     one_to_red();
+  //     red_to_two();
+  //     release();
+  //   }
+  //   else
+  //   {
+  //     one_to_two();
+  //     release();
+  //     if (hall_state == HIGH)
+  //     {
+  //       two_to_red();
+  //       red_to_three();
+  //       three_to_four();
+  //       four_to_start();
+  //     }
+  //   }
+  // }
+  // else
+  // {
+  //   factory_to_one();
+  //   release();
+  //   if (hall_state == HIGH)
+  //   {
+  //     one_to_red();
+  //     red_to_two();
+  //     release();
+  //     if (hall_state == HIGH)
+  //     {
+  //       two_to_red();
+  //       red_to_three();
+  //       three_to_four();
+  //       four_to_start();
+  //     }
+  //   }
+  //   else
+  //   {
+  //     one_to_two();
+  //     release();
+  //     if (hall_state == HIGH)
+  //     {
+  //       two_to_red();
+  //       red_to_three();
+  //       three_to_four();
+  //       four_to_start();
+  //     }
+  //     else
+  //     {
+  //       two_to_three();
+  //       if (hall_state == HIGH)
+  //       {
+  //         two_to_red();
+  //         red_to_three();
+  //         three_to_four();
+  //         four_to_start();
+  //       }
+  //       else
+  //       {
+  //         three_to_four();
+  //         four_to_start();  
+  //       }
+  //     }
+  //   }
+  // }
+
+
+
+// backup running code
   factory_to_one();
   release();
+  delay(2000);
+  magnetic_detection();
+
   one_to_two();
   release();
+  delay(2000);
+  magnetic_detection();
+
   two_to_three();
   release();
+  delay(2000);
+  magnetic_detection();
+
   three_to_four();
   release();
+  delay(2000);
+  magnetic_detection();
+
   four_to_start();
 }
