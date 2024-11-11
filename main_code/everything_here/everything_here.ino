@@ -127,6 +127,7 @@ void blueBlink()
   }
 }
 
+// Movement forwards
 void forward()
 {
   blueBlink();
@@ -136,6 +137,7 @@ void forward()
   rightMotor->run(BACKWARD);
 }
 
+// Movement backwards
 void backward()
 {
   leftMotor->setSpeed(100);
@@ -184,6 +186,7 @@ void pointLeft()
   delay(tdelay);
 }
 
+// Stop movement
 void stop()
 {
   leftMotor->setSpeed(150);
@@ -216,7 +219,7 @@ void line_following() //does not detect the junctions/turns!!!
 }
 
 
-void backward_line_following() //does not detect the junctions/turns!!!
+void backward_line_following() //does not detect the junctions or turns!!!
 {
     update_values();
     if (sl_val == LOW && sr_val == LOW)
@@ -1042,7 +1045,7 @@ void magnetic_detection(){
 
 void loop()
 {
-  // start control AGV movement
+  // start procedural control AGV movement
   update_values();
   angleforward(180);
   route_to_factory();
@@ -1053,79 +1056,6 @@ void loop()
   magnetic_detection();
   delay(300);
   turn_180();
-  
-  // if (hall_state == HIGH)
-  // {
-  //   factory_to_red();
-  //   red_to_one();
-  //   release();
-  //   if (hall_state == HIGH)
-  //   {
-  //     one_to_red();
-  //     red_to_two();
-  //     release();
-  //   }
-  //   else
-  //   {
-  //     one_to_two();
-  //     release();
-  //     if (hall_state == HIGH)
-  //     {
-  //       two_to_red();
-  //       red_to_three();
-  //       three_to_four();
-  //       four_to_start();
-  //     }
-  //   }
-  // }
-  // else
-  // {
-  //   factory_to_one();
-  //   release();
-  //   if (hall_state == HIGH)
-  //   {
-  //     one_to_red();
-  //     red_to_two();
-  //     release();
-  //     if (hall_state == HIGH)
-  //     {
-  //       two_to_red();
-  //       red_to_three();
-  //       three_to_four();
-  //       four_to_start();
-  //     }
-  //   }
-  //   else
-  //   {
-  //     one_to_two();
-  //     release();
-  //     if (hall_state == HIGH)
-  //     {
-  //       two_to_red();
-  //       red_to_three();
-  //       three_to_four();
-  //       four_to_start();
-  //     }
-  //     else
-  //     {
-  //       two_to_three();
-  //       if (hall_state == HIGH)
-  //       {
-  //         two_to_red();
-  //         red_to_three();
-  //         three_to_four();
-  //         four_to_start();
-  //       }
-  //       else
-  //       {
-  //         three_to_four();
-  //         four_to_start();  
-  //       }
-  //     }
-  //   }
-  // }
-
-
 
 // backup running code
   factory_to_one();
